@@ -1,9 +1,11 @@
 import collections
 import six
 
+
 # Capture built-in
 _map = map
 _filter = filter
+
 
 def is_sequence(element):
     return isinstance(element, collections.Sequence)
@@ -118,17 +120,16 @@ def map(func, structure, is_atomic=is_scalar):
         'Encountered an element that was neither atomic nor a structure: {}'.format(structure))
 
 
-def reduce(func, structure):
+def reduce(func, structure, is_atomic=is_scalar):
     if structure is None:
         return None
 
-    for i, element in enumerate(flatten(structure)):
+    for i, element in enumerate(flatten(structure, is_atomic=is_scalar)):
         if i == 0:
             reduced = element
         else:
             reduced = func(reduced, element)
     return reduced
-
 
 
 def filter(func, structure, is_atomic=is_scalar, keep_structure=True):
@@ -239,9 +240,9 @@ def _shallow_structure_like(structure, elements, is_atomic=is_scalar):
         return type(structure)(elements)
 
     if is_mapping(structure):
-        if is_mapping(elements):
+        if not is_mapping(elements):
             elements = dict(zip(_sorted_keys(structure), elements))
-        return type(structure)((key, result[key]) for key in _sorted_keys(elements))
+        return type(structure)((key, elements[key]) for key in _sorted_keys(elements))
 
 
 def _sorted_keys(mapping):
