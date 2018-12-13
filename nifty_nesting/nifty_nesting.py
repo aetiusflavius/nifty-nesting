@@ -108,9 +108,14 @@ def map(func, structure, is_atomic=is_scalar):
     if is_atomic(structure):
         return func(structure)
 
-    if is_sequence(structure) or is_set(structure) or is_attrs_object(structure):
+    if is_attrs_object(structure):
+        mapped = [map(func, substructure, is_atomic) for substructure in _iter_attrs(structure)]
+        return _shallow_structure_like(structure, mapped, is_atomic)
+
+    if is_sequence(structure) or is_set(structure):
         mapped = [map(func, substructure, is_atomic) for substructure in structure]
         return _shallow_structure_like(structure, mapped, is_atomic)
+
 
     if is_mapping(structure):
         mapped = [map(func, structure[key], is_atomic) for key in _sorted_keys(structure)]
