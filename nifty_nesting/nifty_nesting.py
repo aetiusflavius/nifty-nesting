@@ -215,6 +215,9 @@ def assert_same_structure(structure1, structure2, is_atomic=is_scalar):
 
 
 def pack_into(structure, flat_list, is_atomic=is_scalar):
+    if structure is None:
+        return None
+
     def _pack_into_helper(structure, flat_list, is_atomic, index):
         packed_list = []
         for substructure in _shallow_yield_from(structure, is_atomic):

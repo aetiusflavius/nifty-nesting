@@ -80,5 +80,32 @@ class MapTest(test.TestCase):
         mapped = nest.map(lambda x: x[0], s, is_atomic=lambda x: isinstance(x, list))
 
 
+class PackIntoTest(test.TestCase):
+
+    def test_none(self):
+        s = None
+        p = nest.pack_into(s, [])
+        self.assertEqual(p, None)
+
+    def test_single_element(self):
+        s = 'string'
+        p = nest.pack_into(s, ['expected'])
+        self.assertEqual(p, 'expected')
+
+    def test_nested(self):
+        s = {'a': 1, 'b': 2, 'c': [3, 4, 5, {6, 7}, (8, 9)], 'd': Point(10, 11), 'e': Coordinates(12, 13)}
+        l = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]
+        p = nest.pack_into(s, l)
+        e = {'a': 2, 'b': 4, 'c': [6, 8, 10, {12, 14}, (16, 18)], 'd': Point(20, 22), 'e': Coordinates(24, 26)}
+        self.assertEqual(p, e)
+
+    def test_atomic(self):
+        s = {'a': [1, 2, 3], 'b': [4, 5, 6]}
+        l = [[2, 4, 6, 8], [10, 12]]
+        p = nest.pack_into(s, l, is_atomic=lambda x: isinstance(x, list))
+        e = {'a': [2, 4, 6, 8], 'b': [10, 12]}
+        self.assertEqual(p, e)
+
+
 if __name__ == '__main__':
     test.main()
