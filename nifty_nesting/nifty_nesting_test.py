@@ -5,14 +5,21 @@ import unittest as test
 import nifty_nesting as nest
 
 
+# namedtuple is part of the structure.
 Point = collections.namedtuple('Point', ['x', 'y'])
 
 
+# attr classes are part of the structure
 @attr.s
 class Coordinates(object):
     x = attr.ib()
     y = attr.ib()
-        
+
+# Regular classes are not part of the structure.
+class Blah:
+    def __init__(self):
+        self.blah = 'blah'
+
 
 class FlattenTest(test.TestCase):
 
@@ -84,27 +91,133 @@ class PackIntoTest(test.TestCase):
 
     def test_none(self):
         s = None
-        p = nest.pack_into(s, [])
+        p = nest.pack_list_into(s, [])
         self.assertEqual(p, None)
 
     def test_single_element(self):
         s = 'string'
-        p = nest.pack_into(s, ['expected'])
+        p = nest.pack_list_into(s, ['expected'])
         self.assertEqual(p, 'expected')
 
     def test_nested(self):
         s = {'a': 1, 'b': 2, 'c': [3, 4, 5, {6, 7}, (8, 9)], 'd': Point(10, 11), 'e': Coordinates(12, 13)}
         l = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]
-        p = nest.pack_into(s, l)
+        p = nest.pack_list_into(s, l)
         e = {'a': 2, 'b': 4, 'c': [6, 8, 10, {12, 14}, (16, 18)], 'd': Point(20, 22), 'e': Coordinates(24, 26)}
         self.assertEqual(p, e)
 
     def test_atomic(self):
         s = {'a': [1, 2, 3], 'b': [4, 5, 6]}
         l = [[2, 4, 6, 8], [10, 12]]
-        p = nest.pack_into(s, l, is_atomic=lambda x: isinstance(x, list))
+        p = nest.pack_list_into(s, l, is_atomic=lambda x: isinstance(x, list))
         e = {'a': [2, 4, 6, 8], 'b': [10, 12]}
         self.assertEqual(p, e)
+
+
+class FilterTest(test.TestCase):
+
+    def test_none(self):
+        s = None
+        f = nest.filter(lambda x: x, s)
+        self.assertEqual(f, None)
+
+    def test_single_element(self):
+        s = 'string'
+        f = nest.filter(lambda x: x != 'string', s)
+        self.assertEqual(f, None)
+
+        f = nest.filter(lambda x: x == 'string', s)
+        self.assertEqual(f, s)
+
+    def test_no_true_elements(self):
+        s = [1, 2, 3]
+        f = nest.filter(lambda x: x > 4, s)
+        self.assertEqual(f, [])
+
+    def test_nested(self):
+        s = {'a': 1, 'b': 2, 'c': [3, 4, 5, {6, 7}, (8, 9)], 'd': Point(10, 11), 'e': Coordinates(12, 13)}
+        f = nest.filter(lambda x: x % 2 == 0, s)
+        self.assertEqual(f, {'b': 2, 'c': [4, {6}, (8,)], 'd': Point(10, None), 'e': Coordinates(12, None)})
+
+
+class AssertSameStructureTest(test.TestCase):
+
+    def test_none(self):
+        nest.assert_same_structure(None, None)
+        nest.assert_same_structure(3, None)
+        with self.assertRaises(AssertionError):
+            nest.assert_same_structure([], None)
+
+    def test_single_element(self):
+        nest.assert_same_structure(3, 'string')
+        with self.assertRaises(AssertionError):
+            nest.assert_same_structure(3, [1])
+        with self.assertRaises(AssertionError):
+            nest.assert_same_structure((1,), 3)
+
+    def test_nested(self):
+        s1 = {'a': 1, 'b': 2, 'c': [3, 4, 5, {6, 7}, (8, 9)], 'd': Point(10, 11), 'e': Coordinates(12, 13)}
+        s2 = {'a': 'hey', 'b': 4, 'c': [2, 3, 4, {'r', 't'}, ('q', 's')], 'd': Point(0, 1), 'e': Coordinates(1, 2)}
+        nest.assert_same_structure(s1, s2)
+
+        s3 = {'a': 'hey', 'b': 4, 'c': [2, 3, 4, {'r', 't'}, ('q', 's', 't')], 'd': Point(0, 1), 'e': Coordinates(1, 2)}
+        with self.assertRaises(AssertionError):
+            nest.assert_same_structure(s1, s3)
+        with self.assertRaises(AssertionError):
+            nest.assert_same_structure(s3, s1)
+
+    def test_atomic(self):
+        s1 = ([1, 2], [3, 4], [5, 6])
+        s2 = ([1], [2], [3])
+        nest.assert_same_structure(s1, s2, is_atomic=lambda x: isinstance(x, list))
+
+
+class ReduceTest(test.TestCase):
+
+    def test_none(self):
+        s = nest.reduce(lambda x, y: x*y, None)
+        self.assertEqual(s, None)
+
+    def test_single_elements(self):
+        s = nest.reduce(lambda x, y: x+y, 3)
+        self.assertEqual(s, 3)
+
+    def test_nested(self):
+        s = {'a': 1, 'b': 2, 'c': [3, 4, 5, {6, 7}, (8, 9)], 'd': Point(10, 11), 'e': Coordinates(12, 13)}
+        r = nest.reduce(lambda x, y: x+y, s)
+        self.assertEqual(r, sum(range(14)))
+
+    def test_atomic(self):
+        s = {'a': 1, 'b': 2, 'c': [3, 4, 5, {6, 7}, (8, 9)], 'd': Point(10, 11), 'e': Coordinates(12, 13)}
+        r = nest.reduce(lambda x, y: x if isinstance(x, Point) else y,
+                        s,
+                        is_atomic=lambda x: isinstance(x, Point) or nest.is_scalar(x))
+        self.assertEqual(r, Point(10, 11))
+
+
+class AtomicTest(test.TestCase):
+
+    def test_is_scalar(self):
+        self.assertTrue(nest.is_scalar(None))
+        self.assertTrue(nest.is_scalar(3))
+        self.assertTrue(nest.is_scalar('string'))
+        self.assertTrue(nest.is_scalar(Blah()))
+
+        self.assertFalse(nest.is_scalar([]))
+        self.assertFalse(nest.is_scalar((2, 3)))
+        self.assertFalse(nest.is_scalar(Point(2, 3)))
+        self.assertFalse(nest.is_scalar(Coordinates(2, 3)))
+
+    def test_has_depth(self):
+        self.assertTrue(nest.has_depth(1)([1, 2]))
+        self.assertTrue(nest.has_depth(1)((1, 2)))
+        self.assertTrue(nest.has_depth(1)(Point(1, 2)))
+        self.assertTrue(nest.has_depth(1)(Coordinates(1, 2)))
+        self.assertTrue(nest.has_depth(2)({'a': Coordinates(1, 2)}))
+        self.assertTrue(nest.has_depth(2)(Coordinates(1, (2, 3))))
+
+        self.assertFalse(nest.has_depth(1)((1, (1, 2))))
+        self.assertFalse(nest.has_depth(1)({'a': [1, 2]}))
 
 
 if __name__ == '__main__':
