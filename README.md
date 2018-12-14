@@ -11,6 +11,9 @@ Allows users to specify what elements should be considered part of the nesting s
 Examples:
 
 ### flatten
+
+Returns a list containing every atomic element of a nested structure.
+
 ```python
 import nifty_nesting as nest
 
@@ -24,6 +27,9 @@ assert flat == [[1, 2], [3, 4], [5, 6]]
 ```
 
 ### map
+
+Maps every atomic element of a nested structure.
+
 ```python
 import nifty_nesting as nest
 
@@ -37,6 +43,9 @@ assert mapped == (2, {'a': 4, 'b': 6})
 ```
 
 ### pack_list_into
+
+Packs a flat list into any arbitrary structure with the same number of atomic elements.
+
 ```python
 import nifty_nesting as nest
 
