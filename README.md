@@ -12,7 +12,7 @@ Examples:
 
 ### flatten
 
-Returns a list containing every atomic element of a nested structure.
+Returns a list containing every atomic element of a nested structure. Elements are returned in a determinstic order.
 
 ```python
 import nifty_nesting as nest
@@ -44,7 +44,7 @@ assert mapped == (2, {'a': 4, 'b': 6})
 
 ### pack_list_into
 
-Packs a flat list into any arbitrary structure with the same number of atomic elements.
+Packs a flat list into any arbitrary structure with the same number of atomic elements. Elements are packed in a deterministic order that is compatible with flat lists created by `flatten`.
 
 ```python
 import nifty_nesting as nest
