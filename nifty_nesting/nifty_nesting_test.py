@@ -208,16 +208,26 @@ class AtomicTest(test.TestCase):
         self.assertFalse(nest.is_scalar(Point(2, 3)))
         self.assertFalse(nest.is_scalar(Coordinates(2, 3)))
 
-    def test_has_depth(self):
-        self.assertTrue(nest.has_depth(1)([1, 2]))
-        self.assertTrue(nest.has_depth(1)((1, 2)))
-        self.assertTrue(nest.has_depth(1)(Point(1, 2)))
-        self.assertTrue(nest.has_depth(1)(Coordinates(1, 2)))
-        self.assertTrue(nest.has_depth(2)({'a': Coordinates(1, 2)}))
-        self.assertTrue(nest.has_depth(2)(Coordinates(1, (2, 3))))
+    def test_has_max_depth(self):
+        self.assertTrue(nest.has_max_depth(1)([1, 2]))
+        self.assertTrue(nest.has_max_depth(1)((1, 2)))
+        self.assertTrue(nest.has_max_depth(1)(Point(1, 2)))
+        self.assertTrue(nest.has_max_depth(1)(Coordinates(1, 2)))
+        self.assertTrue(nest.has_max_depth(2)({'a': Coordinates(1, 2)}))
+        self.assertTrue(nest.has_max_depth(2)(Coordinates(1, (2, 3))))
 
-        self.assertFalse(nest.has_depth(1)((1, (1, 2))))
-        self.assertFalse(nest.has_depth(1)({'a': [1, 2]}))
+        self.assertFalse(nest.has_max_depth(1)((1, (1, 2))))
+        self.assertFalse(nest.has_max_depth(1)({'a': [1, 2]}))
+
+    def test_has_max_depth_with_lists(self):
+        l = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        f = nest.map(lambda x: max(x), l, is_atomic=nest.has_max_depth(1))
+        self.assertEqual(f, [3, 6, 9])
+
+    def test_has_max_depth_with_nested(self):
+        s = {'a': [1, (3, {4, 5})], 'b': {'c': 1}, 'd': [Point(2, 3), Coordinates(Point(1, 2), 7)]}
+        f = nest.flatten(s, is_atomic=nest.has_max_depth(1))
+        self.assertEqual(f, [1, 3, {4, 5}, {'c': 1}, Point(2, 3), Point(1, 2), 7])
 
 
 if __name__ == '__main__':

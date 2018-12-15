@@ -73,7 +73,7 @@ def is_scalar(element):
     return True
 
 
-def has_depth(depth, is_atomic=is_scalar):
+def has_max_depth(depth, is_atomic=is_scalar):
     """Returns an `is_atomic` criterion that checks the depth of a structure.
 
     This function returns a function that can be passed to `is_atomic` to
@@ -81,7 +81,7 @@ def has_depth(depth, is_atomic=is_scalar):
 
     ```
     import nifty_nesting as nest
-    flat = nest.flatten([[1, 2], [3, [4, 5]]], is_atomic=has_depth(1))
+    flat = nest.flatten([[1, 2], [3, [4, 5]]], is_atomic=has_max_depth(1))
     assert flat == [[1, 2], [3], [4, 5]]
     ```
 
@@ -92,17 +92,17 @@ def has_depth(depth, is_atomic=is_scalar):
           of `structure` ought to be treated as an atomic element, i.e.
           not as part of the nesting structure.
     """
-    def _has_depth(structure):
-        def _has_depth_helper(structure, _depth):
+    def _has_max_depth(structure):
+        def _has_max_depth_helper(structure, _depth):
             if is_atomic(structure):
                 return _depth
-            return max([_has_depth_helper(substructure, _depth+1)
+            return max([_has_max_depth_helper(substructure, _depth+1)
                         for substructure in _shallow_yield_from(structure, is_atomic)])
 
-        _depth = _has_depth_helper(structure, 0)
+        _depth = _has_max_depth_helper(structure, 0)
         return _depth <= depth
 
-    return _has_depth
+    return _has_max_depth
 
 
 def flatten(structure, is_atomic=is_scalar):
@@ -399,6 +399,8 @@ def _shallow_structure_like(structure, elements, is_atomic=is_scalar):
         return type(structure)(elements)
 
     if is_mapping(structure):
+        # If a Mapping is passed for `elements`, `elements` can have different keys
+        # than `structure`. Otherwise, the keys are assumed to be the same.
         if not is_mapping(elements):
             elements = dict(zip(_sorted_keys(structure), elements))
         return type(structure)((key, elements[key]) for key in _sorted_keys(elements))
