@@ -10,6 +10,12 @@ Supports `collections.Sequence` (`list`, `tuple`, etc.), `collections.Mapping` (
 
 Allows users to specify what elements should be considered part of the nesting structure and which elements should be considered "atomic" data elements via an `is_atomic` argument to all functions.
 
+### Install with 
+
+```
+pip install nifty_nesting
+```
+
 Examples:
 
 ### flatten
