@@ -6,15 +6,19 @@ Includes: `flatten`, `map`, `pack_into`, `filter`, `reduce`, `assert_same_struct
 
 Heavily inspired by the [internal nesting utilities in TensorFlow.](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/util/nest.py)
 
-Supports `collections.Sequence` (`list`, `tuple`, etc.), `collections.Mapping` (`dict`, etc.), `set`, `namedtuple`, and `attr` data classes as part of the nesting structure.
-
-Allows users to specify what elements should be considered part of the nesting structure and which elements should be considered "atomic" data elements via an `is_atomic` argument to all functions.
-
 ### Install with 
 
 ```
 pip install nifty-nesting
 ```
+
+## Working with nested data is hard.
+
+With `list`s, `tuple`s, `dict`s, `namedtuple`s, `set`s, single objects, `None`, etc., there are so many edge cases to consider. Many developers end up hacking together a solution that works only for their particular case, and becomes hard to expand in the future when a new data structure is introduced. Don't reinvent the wheel. `nifty-nesting` provides a set of modular utilities that can be customized to perfectly suit your project's needs.
+
+`nifty-nesting` supports `collections.Sequence` (`list`, `tuple`, etc.), `collections.Mapping` (`dict`, etc.), `set`, `namedtuple`, and `attr` data classes as part of the nesting structure.
+
+`nifty-nesting` allows users to specify what elements should be considered part of the nesting structure and which elements should be considered "atomic" data elements via an `is_atomic` argument to all functions.
 
 Examples:
 
