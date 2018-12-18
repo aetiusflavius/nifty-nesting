@@ -55,44 +55,210 @@ packed = nest.pack_list_into(structure, flat_list)
 assert packed == ('a', {'key': ['b', {'c', 'd'}, 'e']}, ['f', 'g'])
 ```
 
-### End-to-End Example
-```python
-from collections import namedtuple
-import nifty_nesting as nest
+## Documentation
 
-Person = namedtuple('Person', ['name', 'birthday'])
+### Main functions
 
-people = ({'user': Person('John', '12/11'),
-           'friends': [
-              Person('Jim', '12/12'),
-              Person('Tim', '12/13'),
-              Person('Suzy', 12/14'),
-           ],
-           'family': {
-             'Mom': Person('Mary', '12/15'),
-             'Dad': Person('Michael', '12/16')
-           }},
-           {'user': Person('Bob', '12/17'),
-           'friends': [
-              Person('Tony', '12/18'),
-              Person('Rick', '12/19'),
-              Person('Kelly', 12/20'),
-           ],
-           'family': {
-             'Mom': Person('Fred', '12/21'),
-             'Dad': Person('Judith', '12/22')
-           }})
-messages_list = []
-for person in nest.flatten(people, is_atomic=lambda x: isinstance(x, Person)):
-  if person['birthday'] == today():
-    messages_list.append('Happy Birthday {}!'.format(person['name'])
-  else:
-    messages_list.append('{} days til your Birthday'.format(person['birthday' - today()))
-messages = nest.pack_list_into(people, 
-                               messages_list, 
-                               is_atomic=lambda x: isinstance(x, Person))
-```
-                            
+#### flatten(structure, is_atomic=is_scalar)
+    
+    Returns a flattened list containing the atomic elements of `structure`.
+
+    The elements of `structure` are flattened in a deterministic order.
+
+    ```
+    import nifty_nesting as nest
+    flat = nest.flatten([1, (2, {'a': 3}, 4])
+    assert flat == [1, 2, 3, 4]
+    ```
+
+    Arguments:
+        structure: An arbitrarily nested structure of elements.
+        is_atomic: A function that returns `True` if a certain element
+          of `structure` ought to be treated as an atomic element, i.e.
+          not as part of the nesting structure.
+
+    Returns:
+        A list containing every atomic element of `structure`.
+    
+#### map(func, structure, is_atomic=is_scalar)
+    Maps the atomic elements of `structure`.
+
+    ```
+    import nifty_nesting as nest
+    structure = {'a': [1, 2], 'b': (3, 4, {'c': 5})}
+    mapped = nest.map(lambda x: 2*x, structure)
+    assert mapped == {'a': [2, 4], 'b': (6, 8, {'c': 10})}
+    ```
+
+    Arguments:
+      func: The function to use to map atomic elements of `structure`.
+      structure: An arbitrarily nested structure of elements.
+      is_atomic: A function that returns `True` if a certain element
+        of `structure` ought to be treated as an atomic element, i.e.
+        not as part of the nesting structure.
+
+    Returns:
+      A structure with the same structure as `structure`, with the atomic elements
+        mapped according to `func`.
+    
+#### reduce(func, structure, is_atomic=is_scalar):
+    Reduces the atomic elements of `structure`.
+
+    ```
+    import nifty_nesting as nest
+    structure = {'a': [1, 2], 'b': (3, 4, {'c': 5})}
+    reduced = nest.reduce(lambda x, y: x+y, structure)
+    assert reduced == 15
+    ```
+
+    Arguments:
+      func: The function to use to reduce atomic elements of `structure`.
+      structure: An arbitrarily nested structure of elements.
+      is_atomic: A function that returns `True` if a certain element
+        of `structure` ought to be treated as an atomic element, i.e.
+        not as part of the nesting structure.
+
+    Returns:
+      The reduced value.
+    
+ #### filter(func, structure, keep_structure=True, is_atomic=is_scalar)
+    Filters the atomic elements of `structure`.
+
+    ```
+    import nifty_nesting as nest
+    structure = {'a': [1, 2], 'b': (3, 4, {'c': 5})}
+    filtered = nest.filter(lambda x: x > 2, structure)
+    assert filtered == {'a': [], 'b': (3, 4, {'c': 5})}
+
+    filtered = nest.filter(lambda x: x > 2, structure, keep_structure=False)
+    assert filtered == {'b': (3, 4, {'c': 5})}
+    ```
+
+    Arguments:
+      func: The function to use to filter atomic elements of `structure`.
+      structure: An arbitrarily nested structure of elements.
+      keep_structure: Whether or not to preserve empty substructures. If
+        `True`, these structures will be kept. If `False`, they will be
+        entirely filtered out.
+      is_atomic: A function that returns `True` if a certain element
+        of `structure` ought to be treated as an atomic element, i.e.
+        not as part of the nesting structure.
+
+    Returns:
+      The filtered elements of `structure` in the same structure as `structure`.
+      
+ #### assert_same_structure(structure1, structure2, is_atomic=is_scalar)
+    Asserts that `structure1` and `structure2` have the same nested structure.
+
+    ```
+    import nifty_nesting as nest
+    structure1 = {'a': [1, 2], 'b': (3, 4, {'c': 5})}
+    structure1 = {'a': ['a', 'b'], 'b': ('c', 'd', {'c': 'e'})}
+    nest.assert_same_structure(structure1, structure2)
+    ```
+
+    Arguments:
+      structure1: An arbitrarily nested structure of elements.
+      structure2: An arbitrarily nested structure of elements.
+      is_atomic: A function that returns `True` if a certain element
+        of `structure` ought to be treated as an atomic element, i.e.
+        not as part of the nesting structure.
+
+    Raises:
+      `AssertionError` if the structures are not the same.
+    
+#### pack_list_into(structure, flat_list, is_atomic=is_scalar)
+    Packs the atomic elements of `flat_list` into the same structure as `structure`.
+
+    ``
+    import nifty_nesting as nest
+    structure = {'a': [1, 2], 'b': (3, 4, {'c': 5})}
+    flat_list = [2, 4, 6, 7, 10]
+    packed = nest.pack_list_into(structure, flat_list)
+    assert packed == {'a': [2, 4], 'b': (6, 8, {'c': 10})}
+    ```
+
+    Arguments:
+      structure: An arbitrarily nested structure of elements.
+      flat_list: A flat list with the same number of atomic elements as
+        `structure`.
+      is_atomic: A function that returns `True` if a certain element
+        of `structure` ought to be treated as an atomic element, i.e.
+        not as part of the nesting structure.
+
+    Returns:
+      A structure with the atomic elements of `flat_list` packed into the same
+        structure as `structure`.
+
+### Helper functions for `is_atomic` 
+ 
+ #### is_scalar(element)
+    An `is_atomic` criterion. Returns `True` for scalar elements.
+
+    Scalar elements are : strings and any object that is not one of:
+      collections.Sequence, collections.Mapping, set, or attrs object.
+
+    ```
+    import nifty_nesting as nest
+    flat = nest.flatten([1, [2, 3]], is_atomic=is_scalar)
+    assert flat == [1, 2, 3]
+    ```
+
+    Arguments:
+      element: The element to check.
+
+    Returns:
+      `True` if the element is a scalar, else `False`.
+    
+#### has_max_depth(depth, is_atomic=is_scalar)
+    Returns an `is_atomic` criterion that checks the depth of a structure.
+
+    This function returns a function that can be passed to `is_atomic` to
+    preserve all structures up to a given depth.
+
+    ```
+    import nifty_nesting as nest
+    flat = nest.flatten([[1, 2], [3, [4, 5]]], is_atomic=has_max_depth(1))
+    assert flat == [[1, 2], [3], [4, 5]]
+    ```
+
+    Arguments:
+      depth: The maximum depth a structure can have in order to be considered
+        as an atomic element. For instance, `[1, 2, {'a': 3}]` has a depth of 2.
+        is_atomic: A function that returns `True` if a certain element
+          of `structure` ought to be treated as an atomic element, i.e.
+          not as part of the nesting structure.
+
+    Returns:
+       A function that can be passed to `is_atomic` to check for elements
+       with a depth of `depth` or less.
+
+#### is_sequence(element)
+    
+Returns `True` for instances of `collections.Sequence`.
+
+#### is_mapping(element)
+   
+Returns `True` for instances of `collections.Mapping`.
+
+#### is_set(element)
+
+ Returns `True` for instances of `set`.
+ 
+ #### is_namedtuple(element)
+ 
+ Returns `True` for instances of `namedtuple`.
+ 
+ #### is_attrs_object(element)
+   
+ Returns `True` for instances of `attr`-decorated classes.
+
+
+
+
+
+
+
 
 
            
