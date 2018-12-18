@@ -12,6 +12,8 @@ from .nifty_nesting import map
 from .nifty_nesting import pack_list_into
 from .nifty_nesting import reduce
 
+name = 'nifty_nesting'
+
 __all__ = ['assert_same_structure',
            'filter',
            'flatten',

@@ -91,6 +91,10 @@ def has_max_depth(depth, is_atomic=is_scalar):
         is_atomic: A function that returns `True` if a certain element
           of `structure` ought to be treated as an atomic element, i.e.
           not as part of the nesting structure.
+
+    Returns:
+       A function that can be passed to `is_atomic` to check for elements
+       with a depth of `depth` or less.
     """
     def _has_max_depth(structure):
         def _has_max_depth_helper(structure, _depth):
