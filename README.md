@@ -4,6 +4,8 @@
 
 Includes: `flatten`, `map`, `pack_into`, `filter`, `reduce`, `assert_same_structure`
 
+Heavily inspired by the [internal nesting utilities in TensorFlow.](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/python/util/nest.py)
+
 Supports `collections.Sequence` (`list`, `tuple`, etc.), `collections.Mapping` (`dict`, etc.), `set`, `namedtuple`, and `attr` data classes as part of the nesting structure.
 
 Allows users to specify what elements should be considered part of the nesting structure and which elements should be considered "atomic" data elements via an `is_atomic` argument to all functions.
