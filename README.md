@@ -13,7 +13,7 @@ Allows users to specify what elements should be considered part of the nesting s
 ### Install with 
 
 ```
-pip install nifty_nesting
+pip install nifty-nesting
 ```
 
 Examples:
