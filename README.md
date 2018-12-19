@@ -14,7 +14,7 @@ pip install nifty-nesting
 
 ## Working with nested data is hard.
 
-With `list`s, `tuple`s, `dict`s, `namedtuple`s, `set`s, single objects, `None`, etc., there are so many edge cases to consider. Many developers end up hacking together a solution that works only for their particular case, and becomes hard to expand in the future when a new data structure is introduced. **Don't reinvent the wheel.** `nifty-nesting` provides a set of modular utilities that can be customized to perfectly suit your project's needs.
+With `list`s, `tuple`s, `dict`s, `namedtuple`s, `set`s, single objects, `None`, etc., there are so many edge cases to consider. Many developers end up hacking together a solution that works only for their particular case, and that becomes hard to expand in the future when a new data structure is introduced. **Don't reinvent the wheel.** `nifty-nesting` provides a set of modular utilities that can be customized to perfectly suit your project's needs.
 
 `nifty-nesting` supports `collections.Sequence` (`list`, `tuple`, etc.), `collections.Mapping` (`dict`, etc.), `set`, `namedtuple`, and `attr` data classes as part of the nesting structure.
 
